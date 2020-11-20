@@ -55,3 +55,48 @@ public class LoginActivity extends AppCompatActivity {
                 break;
         }
     }
+private void startHome() {
+        Intent hIntent = new Intent(LoginActivity.this, MainActivity.class);
+        startActivity(hIntent);
+    }
+    private void getCredentials() {
+        String userentry = nameEditText.getText().toString();
+        String username = dbAccessObj.uservalid(userentry);
+        if(!userentry.isEmpty()){
+
+        if(userentry.equals(username)){
+            String pwd = dbAccessObj.query(userentry);
+            String userpwd = pwdEditText.getText().toString();
+            if(pwd.equals(userpwd)){
+                startHome();
+            }
+            else{
+                Toast.makeText(this, "Invalid Password", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else{
+            Toast.makeText(this, "Invalid Username Kindly register", Toast.LENGTH_SHORT).show();
+        }
+        }
+        else{
+            Toast.makeText(this, "Kindly Enter Username & Password", Toast.LENGTH_SHORT).show();
+        }
+    }
+    public void handleDb(View view) {
+        Log.i(TAG,"on clicking check");
+        //get the data from the edittext
+        String name = nameEditText.getText().toString();
+        String pwd = pwdEditText.getText().toString();
+        //create a file names myprefs
+        SharedPreferences preferences = getSharedPreferences(MYPREFS,MODE_PRIVATE);
+        //open the file
+        SharedPreferences.Editor editor = preferences.edit();
+        //write to the file
+        editor.putString(NAMEKEY,name);
+        editor.putString(PWDKEY,pwd);
+        //save the file
+        editor.apply();
+    }
+
+
+}
