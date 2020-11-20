@@ -95,9 +95,69 @@ public class MainActivity extends AppCompatActivity implements  SwipeRefreshLayo
         } else {
             call = apiInterface.getNews(country, API_KEY);
         }
-
+        
         call.enqueue(new Callback<News>() {
+            @Override
+            /**
+        Represents the successful result of invoking an API 
+        **/
+            public void onResponse(Call<News> call, Response<News> response) {
+                if (response.isSuccessful() && response.body().getArticle() != null){
 
+                    if (!articles.isEmpty()){
+                        articles.clear();
+                    }
+
+                    articles = response.body().getArticle();
+                    adapter = new Adapter(articles, MainActivity.this);
+                    recyclerView.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
+
+                    initListener();
+
+                    topHeadline.setVisibility(View.VISIBLE);
+                    swipeRefreshLayout.setRefreshing(false);
+
+
+                } else {
+
+                    topHeadline.setVisibility(View.INVISIBLE);
+                    swipeRefreshLayout.setRefreshing(false);
+
+                    String errorCode;
+                    switch (response.code()) {
+                        case 404:
+                            errorCode = "404 not found";
+                            break;
+                        case 500:
+                            errorCode = "500 server broken";
+                            break;
+                        default:
+                            errorCode = "unknown error";
+                            break;
+                    }
+
+                    showErrorMessage(
+                            R.drawable.no_result,
+                            "No Result",
+                            "Please Try Again!\n"+
+                            errorCode);
+
+                }
+            }
+            /**
+              just show a message indicating an Internet connection issue
+              **/
+            @Override
+            public void onFailure(Call<News> call, Throwable t) {
+                topHeadline.setVisibility(View.INVISIBLE);
+                swipeRefreshLayout.setRefreshing(false);
+                showErrorMessage(
+                        R.drawable.oops,
+                        "Oops..",
+                        "Network failure, Please Try Again\n"+
+                                t.toString());
+            }
         });
 
     }
@@ -105,9 +165,9 @@ public class MainActivity extends AppCompatActivity implements  SwipeRefreshLayo
 
 
     private void initListener(){
-        /**
-         Callback method to be invoked when an item in this AdapterView has been clicked.
-         **/
+    /**
+    Callback method to be invoked when an item in this AdapterView has been clicked.
+    **/
         adapter.setOnItemClickListener(new Adapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -182,8 +242,8 @@ public class MainActivity extends AppCompatActivity implements  SwipeRefreshLayo
 
     private void onLoadingSwipeRefresh(final String keyword){
 /**
- swipeRefreshLayout is to allow the users to refresh the screen manually
- **/
+swipeRefreshLayout is to allow the users to refresh the screen manually
+**/
         swipeRefreshLayout.post(
                 new Runnable() {
                     @Override
